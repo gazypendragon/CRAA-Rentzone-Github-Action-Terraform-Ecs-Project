@@ -141,10 +141,10 @@ jobs:
       env_file_bucket_name: ${{ env.ENV_FILE_BUCKET_NAME }}
 
 
-  # Create ECR repository
+    # Create ECR repository
   create_ecr_repository:
     name: Create ECR repository
-    needs:
+    needs: 
       - configure_aws_credentials
       - deploy_aws_infrastructure
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
@@ -157,7 +157,7 @@ jobs:
         env:
           IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
         run: |
-          result=$(aws ecr describe-repositories --repository-names "${{ env.image_name  }}" | jq -r '.repositories[0].repositoryName')
+          result=$(aws ecr describe-repositories --repository-names "${{ env.IMAGE_NAME }}" | jq -r '.repositories[0].repositoryName')
           echo "repo_name=$result" >> $GITHUB_ENV
         continue-on-error: true
 
@@ -166,6 +166,4 @@ jobs:
           IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
         if: env.repo_name != env.IMAGE_NAME
         run: |
-          aws ecr create-repository --repository-name ${{ env.image_name }}
-
-      
+          aws ecr create-repository --repository-name ${{ env.IMAGE_NAME }}
