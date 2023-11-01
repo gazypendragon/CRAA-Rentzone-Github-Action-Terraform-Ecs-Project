@@ -144,7 +144,7 @@ jobs:
   # Create ECR repository
   create_ecr_repository:
     name: Create ECR repository
-    needs: 
+    needs:
       - configure_aws_credentials
       - deploy_aws_infrastructure
     if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
