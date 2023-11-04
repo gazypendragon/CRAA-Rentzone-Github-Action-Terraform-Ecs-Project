@@ -214,7 +214,7 @@ jobs:
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
 
 
-  # Build and push Docker image to ECR
+# Build and push Docker image to ECR
   build_and_push_image:
     name: Build and push Docker image to ECR
     needs:
