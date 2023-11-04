@@ -259,6 +259,6 @@ jobs:
 
       - name: Push Docker Image to Amazon ECR
         env:
-          IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
+          IMAGE_NAME: ${needs.deploy_aws_infrastructure.outputs.image_name }}
         run: |
           docker push ${{ secrets.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}
