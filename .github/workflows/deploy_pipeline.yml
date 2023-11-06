@@ -327,9 +327,9 @@ jobs:
 
       - name: Run Flyway migrate command
         env:
-          FLYWAY_URL: jdbc:mysql://${{ needs.deploy_aws_infrastructure.outputs.rds_endpoint }}:3306/${{ secret.RDS_DB_NAME }}
+          FLYWAY_URL: jdbc:mysql://${{ needs.deploy_aws_infrastructure.outputs.rds_endpoint }}:3306/${{ secrets.RDS_DB_NAME }}
           FLYWAY_USER: ${{ secrets.RDS_DB_USERNAME }}
-          FLYWAY_PASSWORD: ${{ secret.RDS_DB_PASSWORD }}
+          FLYWAY_PASSWORD: ${{ secrets.RDS_DB_PASSWORD }}
           FLYWAY_LOCATION: filesystem:sql
         working-directory: ./flyway-${{ env.FLYWAY_VERSION }}
         run: |
