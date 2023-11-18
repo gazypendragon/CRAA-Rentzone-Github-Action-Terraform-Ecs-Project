@@ -271,7 +271,7 @@ sudo ln -s $(pwd)/flyway-9.20.0/flyway /usr/local/bin
 sudo mkdir sql
 
 # Download the migration SQL script from AWS S3
-aws s3 cp s3://nestapp-bucket1/V1__nest.sql sql/
+aws s3 cp s3://<bucket_name>/V1__nest.sql sql/
 
 # Run Flyway migration
 sudo flyway -url=jdbc:mysql://"${RDS_ENDPOINT}"/"${RDS_DB_NAME}" \
