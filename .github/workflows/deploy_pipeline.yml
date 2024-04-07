@@ -468,7 +468,7 @@ jobs:
           # Adjust this path if your code is in a different directory
           languages: all
           # Adjust this path if your code is in a different directory
-          search-path: './iac'
+          search-path: '.'
 
   # Configure AWS credentials 
   configure_aws_credentials:
