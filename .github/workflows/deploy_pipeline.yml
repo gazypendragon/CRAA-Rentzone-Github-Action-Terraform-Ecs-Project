@@ -525,6 +525,8 @@ jobs:
 
       - name: Print GITHUB_ENV contents
         run: cat $GITHUB_ENV
+        - name: Print GITHUB_ENV contents
+        run: cat $GITHUB_ENV
 
       outputs:
         terraform_action: ${{ env.TERRAFORM_ACTION }}
@@ -558,6 +560,4 @@ jobs:
         if: env.repo_name != env.IMAGE_NAME
         run: |
           aws ecr create-repository --repository-name ${{ env.IMAGE_NAME }}
-
   # More jobs...
-
