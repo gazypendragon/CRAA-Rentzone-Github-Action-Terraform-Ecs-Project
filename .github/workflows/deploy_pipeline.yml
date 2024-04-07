@@ -451,7 +451,7 @@ env:
   FLYWAY_VERSION: 9.8.1
 
 jobs:
-  # Code scanning using CodeQL
+  # Code scanning using CodeQL (v2)
   code_scanning:
     name: Code Scanning
     runs-on: ubuntu-latest
@@ -460,15 +460,15 @@ jobs:
         uses: actions/checkout@v3
 
       - name: Initialize CodeQL
-        uses: github/codeql-action/init@v1
-        with:
-          languages: all
+        uses: github/codeql-action/init@v2
 
       - name: Analyze code with CodeQL
-        uses: github/codeql-action/analyze@v1
+        uses: github/codeql-action/analyze@v2
         with:
           # Adjust this path if your code is in a different directory
-          path: '.'
+          languages: all
+          # Adjust this path if your code is in a different directory
+          search-path: './iac'
 
   # Configure AWS credentials 
   configure_aws_credentials:
@@ -505,3 +505,5 @@ jobs:
       - name: Run Terraform apply/destroy
         working-directory: ./iac
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
+
+      # Rest of your Terraform deployment steps...
