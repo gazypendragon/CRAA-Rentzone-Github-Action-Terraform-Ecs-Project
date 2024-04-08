@@ -450,7 +450,7 @@ env:
   FLYWAY_VERSION: 9.8.1
 
 jobs:
-  # Configure AWS credentials 
+  # Configure AWS credentials
   configure_aws_credentials:
     name: Configure AWS credentials
     runs-on: ubuntu-latest
@@ -480,14 +480,20 @@ jobs:
           output: 'trivy-results.sarif'
           ignore-unfixed: true
           severity: 'CRITICAL,HIGH'
+      
+      - name: Upload Trivy scan results
+        uses: actions/upload-artifact@v2
+        with:
+          name: trivy-results
+          path: trivy-results.sarif
 
-        # Build AWS infrastructure
+  # Build AWS infrastructure
   deploy_aws_infrastructure:
     name: Build AWS infrastructure
-    needs: - configure_aws_credentials
-           - trivy_iac_scan
+    needs: [configure_aws_credentials, trivy_iac_scan]
     runs-on: ubuntu-latest
     steps:
+      # Your existing steps for Terraform initialization, apply, and output retrieval
       - name: Checkout repository
         uses: actions/checkout@v3
 
