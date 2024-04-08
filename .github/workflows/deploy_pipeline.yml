@@ -433,7 +433,7 @@
   #       run: |
   #         aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }}
 
-# Deploy Pipeline with Trivy Vulnerability
+# Deploy Pipeline Scanning terraform config with Trivy For Vulnerability
 on:
   push:
     branches: [main]
@@ -442,7 +442,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: us-east-1
-  TERRAFORM_ACTION: apply
+  TERRAFORM_ACTION: destroy
   GITHUB_USERNAME: gazypendragon
   REPOSITORY_NAME: CRAA-Docker-Application-Code
   WEB_FILE_ZIP: rentzone.zip
