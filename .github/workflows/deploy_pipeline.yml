@@ -442,7 +442,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: us-east-1
-  TERRAFORM_ACTION: destroy
+  TERRAFORM_ACTION: apply
   GITHUB_USERNAME: gazypendragon
   REPOSITORY_NAME: CRAA-Docker-Application-Code
   WEB_FILE_ZIP: rentzone.zip
@@ -456,7 +456,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v1
+        uses: aws-actions/configure-aws-credentials@v4
         with:
           aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
@@ -469,7 +469,7 @@ jobs:
     needs: configure_aws_credentials
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       
       - name: Run Trivy Vulnerability Scanner for IaC
         uses: aquasecurity/trivy-action@master
@@ -482,7 +482,7 @@ jobs:
           severity: 'CRITICAL,HIGH'
       
       - name: Upload Trivy scan results
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: trivy-results
           path: trivy-results.sarif
@@ -495,10 +495,10 @@ jobs:
     steps:
       # Your existing steps for Terraform initialization, apply, and output retrieval
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set up Terraform
-        uses: hashicorp/setup-terraform@v1
+        uses: hashicorp/setup-terraform@v3
         with:
           terraform_version: 1.1.7
 
@@ -605,7 +605,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Check if ECR repository exists
         env:
@@ -678,10 +678,10 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Login to Amazon ECR
-        uses: aws-actions/amazon-ecr-login@v1
+        uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
         env:
@@ -763,7 +763,7 @@ jobs:
     runs-on: self-hosted
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Download Flyway
         run: |
