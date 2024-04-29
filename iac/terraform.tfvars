@@ -13,7 +13,7 @@ private_data_subnet_az1_cidr = "10.0.4.0/24"
 private_data_subnet_az2_cidr = "10.0.5.0/24"
 
 # secrets manager variables
-secrets_manager_secret_name = "rentzone-secret"
+secrets_manager_secret_name = "rentzone-app-dev-secrets"
 
 # rds variables
 multi_az_deployment          = "false"
