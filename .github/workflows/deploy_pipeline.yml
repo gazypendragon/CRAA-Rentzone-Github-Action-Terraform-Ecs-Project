@@ -8,7 +8,7 @@ env:
   AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
   AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
   AWS_REGION: us-east-1
-  TERRAFORM_ACTION: apply
+  TERRAFORM_ACTION: destroy
   GITHUB_USERNAME: gazypendragon
   REPOSITORY_NAME: CRAA-Docker-Application-Code
   WEB_FILE_ZIP: rentzone.zip
@@ -230,7 +230,7 @@ jobs:
         uses: actions/checkout@v4
 
       - name: Login to Amazon ECR
-        id: login-ecr
+        
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
@@ -403,6 +403,7 @@ jobs:
       new_td_revision: ${{ env.NEW_TD_REVISION }}
 
 
+  # Restart ECS Fargate service
   # Restart ECS Fargate service
   restart_ecs_service:
     name: Restart ECS Fargate service
