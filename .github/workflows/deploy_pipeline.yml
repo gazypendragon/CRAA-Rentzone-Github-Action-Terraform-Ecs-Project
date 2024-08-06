@@ -431,7 +431,8 @@ jobs:
           ECS_CLUSTER_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_cluster_name }}
           ECS_SERVICE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_service_name }}
         run: |
-          aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }}  --max-attempts 60
+          aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }} --waiter-delay 5 --waiter-max-attempts 60
+
 
 # # Deploy Pipeline Scanning terraform config with Trivy For Vulnerability
 # on:
