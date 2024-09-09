@@ -24,10 +24,9 @@ jobs:
       - name: Configure AWS credentials
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          aws-access-key-id: ${{ env.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ env.AWS_SECRET_ACCESS_KEY }}
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ env.AWS_REGION }}
-
 
   # Build AWS infrastructure
   deploy_aws_infrastructure:
@@ -52,77 +51,77 @@ jobs:
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
 
       - name: Get Terraform output image name
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           IMAGE_NAME_VALUE=$(terraform output -raw image_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "IMAGE_NAME=$IMAGE_NAME_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output domain name
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           DOMAIN_NAME_VALUE=$(terraform output -raw domain_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "DOMAIN_NAME=$DOMAIN_NAME_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output RDS endpoint
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           RDS_ENDPOINT_VALUE=$(terraform output -raw rds_endpoint | grep -Eo "^[^:]+" | tail -n 1)
           echo "RDS_ENDPOINT=$RDS_ENDPOINT_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output image tag
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           IMAGE_TAG_VALUE=$(terraform output -raw image_tag | grep -Eo "^[^:]+" | tail -n 1)
           echo "IMAGE_TAG=$IMAGE_TAG_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output private data subnet az1 id
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           PRIVATE_DATA_SUBNET_AZ1_ID_VALUE=$(terraform output -raw private_data_subnet_az1_id | grep -Eo "^[^:]+" | tail -n 1)
           echo "PRIVATE_DATA_SUBNET_AZ1_ID=$PRIVATE_DATA_SUBNET_AZ1_ID_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output runner security group id
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           RUNNER_SECURITY_GROUP_ID_VALUE=$(terraform output -raw runner_security_group_id | grep -Eo "^[^:]+" | tail -n 1)
           echo "RUNNER_SECURITY_GROUP_ID=$RUNNER_SECURITY_GROUP_ID_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output task definition name
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           TASK_DEFINITION_NAME_VALUE=$(terraform output -raw task_definition_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "TASK_DEFINITION_NAME=$TASK_DEFINITION_NAME_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output ecs cluster name
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           ECS_CLUSTER_NAME_VALUE=$(terraform output -raw ecs_cluster_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "ECS_CLUSTER_NAME=$ECS_CLUSTER_NAME_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output ecs service name
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           ECS_SERVICE_NAME_VALUE=$(terraform output -raw ecs_service_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "ECS_SERVICE_NAME=$ECS_SERVICE_NAME_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output environment file name
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           ENVIRONMENT_FILE_NAME_VALUE=$(terraform output -raw environment_file_name | grep -Eo "^[^:]+" | tail -n 1)
           echo "ENVIRONMENT_FILE_NAME=$ENVIRONMENT_FILE_NAME_VALUE" >> $GITHUB_ENV
 
       - name: Get Terraform output env file bucket name
-        if: env.TERRAFORM_ACTION == 'apply'
+        if: ${{ env.TERRAFORM_ACTION == 'apply' }}
         working-directory: ./iac
         run: |
           ENV_FILE_BUCKET_NAME_VALUE=$(terraform output -raw env_file_bucket_name | grep -Eo "^[^:]+" | tail -n 1)
@@ -145,14 +144,13 @@ jobs:
       environment_file_name: ${{ env.ENVIRONMENT_FILE_NAME }}
       env_file_bucket_name: ${{ env.ENV_FILE_BUCKET_NAME }}
 
-
-    # Create ECR repository
+  # Create ECR repository
   create_ecr_repository:
     name: Create ECR repository
     needs: 
       - configure_aws_credentials
       - deploy_aws_infrastructure
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    if: ${{ needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout repository
@@ -169,10 +167,9 @@ jobs:
       - name: Create ECR repository
         env:
           IMAGE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.image_name }}
-        if: env.repo_name != env.IMAGE_NAME
+        if: ${{ env.repo_name != env.IMAGE_NAME }}
         run: |
           aws ecr create-repository --repository-name ${{ env.IMAGE_NAME }}
-
 
   # Start self-hosted EC2 runner
   start_runner:
@@ -180,7 +177,7 @@ jobs:
     needs: 
       - configure_aws_credentials
       - deploy_aws_infrastructure
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    if: ${{ needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' }}
     runs-on: ubuntu-latest
     steps:
       - name: Check for running EC2 runner
@@ -194,7 +191,7 @@ jobs:
           fi
 
       - name: Start EC2 runner
-        if: env.runner-running != 'true'
+        if: ${{ env.runner-running != 'true' }}
         id: start-ec2-runner
         uses: machulav/ec2-github-runner@v2
         with:
@@ -214,7 +211,6 @@ jobs:
       label: ${{ steps.start-ec2-runner.outputs.label }}
       ec2-instance-id: ${{ steps.start-ec2-runner.outputs.ec2-instance-id }}
 
-
   # Build and push Docker image to ECR
   build_and_push_image:
     name: Build and push Docker image to ECR
@@ -223,14 +219,13 @@ jobs:
       - deploy_aws_infrastructure
       - create_ecr_repository
       - start_runner
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    if: ${{ needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' }}
     runs-on: self-hosted
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Login to Amazon ECR
-        
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Build Docker image
@@ -265,7 +260,6 @@ jobs:
         run: |
           docker push ${{ secrets.ECR_REGISTRY }}/${{ env.IMAGE_NAME }}
 
-
   # Create environment file and export to S3 
   export_env_variables:
     name: Create environment file and export to S3 
@@ -274,7 +268,7 @@ jobs:
       - deploy_aws_infrastructure
       - start_runner
       - build_and_push_image
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    if: ${{ needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' }}
     runs-on: ubuntu-latest
     steps:
       - name: Export environment variable values to file
@@ -300,7 +294,6 @@ jobs:
           ENV_FILE_BUCKET_NAME: ${{ needs.deploy_aws_infrastructure.outputs.env_file_bucket_name }}
         run: aws s3 cp ${{ env.ENVIRONMENT_FILE_NAME }} s3://${{ env.ENV_FILE_BUCKET_NAME }}/${{ env.ENVIRONMENT_FILE_NAME }}
 
-
   # Migrate data into RDS database with Flyway
   migrate_data:
     name: Migrate data into RDS database with Flyway
@@ -308,7 +301,7 @@ jobs:
       - deploy_aws_infrastructure
       - start_runner
       - build_and_push_image
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    if: ${{ needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' }}
     runs-on: self-hosted
     steps:
       - name: Checkout repository
@@ -339,7 +332,6 @@ jobs:
             -password=${{ env.FLYWAY_PASSWORD }} \
             -locations=${{ env.FLYWAY_LOCATION }} migrate
 
-
   # Stop the self-hosted EC2 runner
   stop_runner:
     name: Stop self-hosted EC2 runner
@@ -350,7 +342,7 @@ jobs:
       - build_and_push_image
       - export_env_variables
       - migrate_data
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' && always() 
+    if: ${{ needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' && always() }}
     runs-on: ubuntu-latest
     steps:
       - name: Stop EC2 runner
@@ -360,7 +352,6 @@ jobs:
           github-token: ${{ secrets.PERSONAL_ACCESS_TOKEN }}
           label: ${{ needs.start_runner.outputs.label }}
           ec2-instance-id: ${{ needs.start_runner.outputs.ec2-instance-id }}
-
 
   # Create new task definition revision
   create_td_revision:
@@ -374,7 +365,7 @@ jobs:
       - export_env_variables
       - migrate_data
       - stop_runner
-    if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
+    if: ${{ needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy' }}
     runs-on: ubuntu-latest
     steps:
       - name: Create new task definition revision
@@ -387,67 +378,5 @@ jobs:
 
           # update the existing task definition by performing the following actions:
           # 1. Update the `containerDefinitions[0].image` to the new image we want to deploy
-          # 2. Remove fields from the task definition that are not compatibile with `register-task-definition` --cli-input-json
-          NEW_TASK_DEFINITION=$(echo "$TASK_DEFINITION" | jq --arg IMAGE "${{ env.ECS_IMAGE }}" '.taskDefinition | .containerDefinitions[0].image = $IMAGE | del(.taskDefinitionArn) | del(.revision) | del(.status) | del(.requiresAttributes) | del(.compatibilities) | del(.registeredAt) | del(.registeredBy)')
-
-          # Register the new task definition and capture the output as JSON
-          NEW_TASK_INFO=$(aws ecs register-task-definition --cli-input-json "$NEW_TASK_DEFINITION")
-
-          # Grab the new revision from the output
-          NEW_TD_REVISION=$(echo "$NEW_TASK_INFO" | jq '.taskDefinition.revision')
-
-          # Set the new revision as an environment variable
-          echo "NEW_TD_REVISION=$NEW_TD_REVISION" >> $GITHUB_ENV
-
-    outputs:
-      new_td_revision: ${{ env.NEW_TD_REVISION }}
-
-
-  # Restart ECS Fargate service
-restart_ecs_service:
-  name: Restart ECS Fargate service
-  needs: 
-    - configure_aws_credentials
-    - deploy_aws_infrastructure 
-    - create_ecr_repository
-    - start_runner
-    - build_and_push_image
-    - export_env_variables
-    - migrate_data
-    - stop_runner
-    - create_td_revision
-  if: needs.deploy_aws_infrastructure.outputs.terraform_action != 'destroy'
-  runs-on: ubuntu-latest
-  steps:
-    - name: Log current ECS service status before update
-      env:
-        ECS_CLUSTER_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_cluster_name }}
-        ECS_SERVICE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_service_name }}
-      run: |
-        echo "Logging ECS service status before update..."
-        aws ecs describe-services --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }}
-
-    - name: Update ECS Service
-      env:
-        ECS_CLUSTER_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_cluster_name }}
-        ECS_SERVICE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_service_name }}
-        TD_NAME: ${{ needs.deploy_aws_infrastructure.outputs.task_definition_name }}
-      run: |
-        echo "Updating ECS service with new task definition..."
-        aws ecs update-service --cluster ${{ env.ECS_CLUSTER_NAME }} --service ${{ env.ECS_SERVICE_NAME }} --task-definition ${{ env.TD_NAME }}:${{ needs.create_td_revision.outputs.new_td_revision }} --force-new-deployment
-
-    - name: Wait for ECS service to become stable
-      env:
-        ECS_CLUSTER_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_cluster_name }}
-        ECS_SERVICE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_service_name }}
-      run: |
-        echo "Waiting for ECS service to stabilize..."
-        aws ecs wait services-stable --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }} --waiter-delay 5 --waiter-max-attempts 80
-
-    - name: Log ECS service status after update
-      env:
-        ECS_CLUSTER_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_cluster_name }}
-        ECS_SERVICE_NAME: ${{ needs.deploy_aws_infrastructure.outputs.ecs_service_name }}
-      run: |
-        echo "Logging ECS service status after update..."
-        aws ecs describe-services --cluster ${{ env.ECS_CLUSTER_NAME }} --services ${{ env.ECS_SERVICE_NAME }}
+          # 2. Remove fields from the task definition that are not compatible with `register-task-definition` --cli-input-json
+          NEW_TASK_DEFINITION
