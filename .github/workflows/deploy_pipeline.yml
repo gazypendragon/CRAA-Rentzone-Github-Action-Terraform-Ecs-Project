@@ -14,6 +14,36 @@ env:
   FLYWAY_VERSION: 9.8.1
 
 jobs:
+# Step 1: Create Assume Role
+  create_assume_role:
+    name: Create Assume Role
+    runs-on: ubuntu-latest
+    permissions:
+      id-token: write  # Required for OIDC
+      contents: read
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Configure AWS credentials with OIDC (no assume role yet)
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Set up Terraform
+        uses: hashicorp/setup-terraform@v3
+        with:
+          terraform_version: 1.1.7
+
+      - name: Terraform Init
+        working-directory: ./iac
+        run: terraform init
+
+      - name: Create Assume Role with Terraform
+        working-directory: ./iac
+        run: terraform apply -target=aws_iam_role.github_oidc_role -auto-approve
+        # -target=aws_iam_role.github_oidc_role ensures only the assume role is created initially
+
    # Configure AWS credentials 
   configure_aws_credentials:
     name: Configure AWS credentials with OIDC
