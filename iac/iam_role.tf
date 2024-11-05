@@ -24,3 +24,4 @@ resource "aws_iam_role_policy_attachment" "github_oidc_role_policy" {
   role       = aws_iam_role.github_oidc_role.name
   policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"  # Replace with a more restrictive policy if needed
 }
+
