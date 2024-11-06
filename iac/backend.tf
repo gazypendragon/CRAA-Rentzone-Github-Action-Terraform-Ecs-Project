@@ -8,3 +8,4 @@ terraform {
     # assume_role_arn = "arn:aws:iam::131975964823:role/GitHubActionsRole"  # Replace with your GitHub OIDC role ARN
   }
 }
+
