@@ -168,9 +168,6 @@ jobs:
 
 
 
-
-
-
     # Create ECR repository
   create_ecr_repository:
     name: Create ECR repository
