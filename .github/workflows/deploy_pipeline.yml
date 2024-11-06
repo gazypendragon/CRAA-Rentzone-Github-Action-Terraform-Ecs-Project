@@ -14,12 +14,11 @@ env:
   FLYWAY_VERSION: 9.8.1
 
 jobs:
-  # Configure AWS credentials 
   configure_aws_credentials:
     name: Configure AWS credentials with OIDC
     runs-on: ubuntu-latest
     permissions:
-      id-token: write  # Required for OIDC
+      id-token: write
       contents: read
     steps:
       - name: Checkout repository
@@ -28,11 +27,10 @@ jobs:
       - name: Configure AWS credentials with OIDC
         uses: aws-actions/configure-aws-credentials@v4
         with:
-          role-to-assume: arn:aws:iam::131975964823:role/GitHubActionsRole  # Your assume role ARN
+          role-to-assume: arn:aws:iam::131975964823:role/GitHubActionsRole
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions
 
-  # Build AWS infrastructure
   deploy_aws_infrastructure:
     name: Build AWS infrastructure
     needs: configure_aws_credentials
@@ -46,6 +44,9 @@ jobs:
         with:
           terraform_version: 1.1.7
 
+      - name: Verify AWS Credentials
+        run: aws sts get-caller-identity
+
       - name: Run Terraform initialize
         working-directory: ./iac
         run: terraform init
@@ -53,6 +54,7 @@ jobs:
       - name: Run Terraform apply/destroy
         working-directory: ./iac
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
+
 
       # Capture Terraform outputs as environment variables
       - name: Get Terraform output image name
