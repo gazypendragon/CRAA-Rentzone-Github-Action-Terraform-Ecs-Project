@@ -48,18 +48,10 @@ jobs:
 
       - name: Run Terraform initialize
         working-directory: ./iac
-        env:
-          AWS_ACCESS_KEY_ID: ${{ steps.configure_aws_credentials.outputs.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.configure_aws_credentials.outputs.aws_secret_access_key }}
-          AWS_SESSION_TOKEN: ${{ steps.configure_aws_credentials.outputs.aws_session_token }}
         run: terraform init
 
       - name: Run Terraform apply/destroy
         working-directory: ./iac
-        env:
-          AWS_ACCESS_KEY_ID: ${{ steps.configure_aws_credentials.outputs.aws_access_key_id }}
-          AWS_SECRET_ACCESS_KEY: ${{ steps.configure_aws_credentials.outputs.aws_secret_access_key }}
-          AWS_SESSION_TOKEN: ${{ steps.configure_aws_credentials.outputs.aws_session_token }}
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
 
       # Capture Terraform outputs as environment variables
@@ -156,6 +148,7 @@ jobs:
       ecs_service_name: ${{ env.ECS_SERVICE_NAME }}
       environment_file_name: ${{ env.ENVIRONMENT_FILE_NAME }}
       env_file_bucket_name: ${{ env.ENV_FILE_BUCKET_NAME }}
+
 
 
 
