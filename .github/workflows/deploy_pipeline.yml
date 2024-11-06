@@ -31,7 +31,6 @@ jobs:
           role-to-assume: arn:aws:iam::131975964823:role/GitHubActionsRole  # Your assume role ARN
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions
-          profile: github_oidc_profile  # Define a custom profile
 
   # Build AWS infrastructure
   deploy_aws_infrastructure:
@@ -49,14 +48,10 @@ jobs:
 
       - name: Run Terraform initialize
         working-directory: ./iac
-        env:
-          AWS_PROFILE: github_oidc_profile  # Use the profile configured in configure_aws_credentials
         run: terraform init
 
       - name: Run Terraform apply/destroy
         working-directory: ./iac
-        env:
-          AWS_PROFILE: github_oidc_profile  # Use the profile configured in configure_aws_credentials
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
 
       - name: Get Terraform output image name
@@ -152,6 +147,7 @@ jobs:
       ecs_service_name: ${{ env.ECS_SERVICE_NAME }}
       environment_file_name: ${{ env.ENVIRONMENT_FILE_NAME }}
       env_file_bucket_name: ${{ env.ENV_FILE_BUCKET_NAME }}
+
 
 
 
