@@ -6,12 +6,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  TERRAFORM_ACTION: apply  # Change to "destroy" if you want to destroy resources
-  GITHUB_USERNAME: gazypendragon
-  REPOSITORY_NAME: CRAA-Docker-Application-Code
-  WEB_FILE_ZIP: rentzone.zip
-  WEB_FILE_UNZIP: rentzone
-  FLYWAY_VERSION: 9.8.1
+  TERRAFORM_ACTION: apply
 
 jobs:
   configure_aws_credentials:
@@ -31,6 +26,10 @@ jobs:
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions
 
+      # Print environment variables to verify if credentials are set
+      - name: Print environment variables
+        run: env | grep AWS
+
   deploy_aws_infrastructure:
     name: Build AWS infrastructure
     needs: configure_aws_credentials
@@ -44,6 +43,7 @@ jobs:
         with:
           terraform_version: 1.1.7
 
+      # Verify if AWS credentials are available before Terraform commands
       - name: Verify AWS Credentials
         run: aws sts get-caller-identity
 
@@ -54,6 +54,7 @@ jobs:
       - name: Run Terraform apply/destroy
         working-directory: ./iac
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
+
 
 
       # Capture Terraform outputs as environment variables
