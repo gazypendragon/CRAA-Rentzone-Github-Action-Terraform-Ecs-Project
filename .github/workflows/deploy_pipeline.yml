@@ -6,7 +6,7 @@ on:
 
 env:
   AWS_REGION: us-east-1
-  TERRAFORM_ACTION: apply
+  TERRAFORM_ACTION: apply  # Change to "destroy" if you want to destroy resources
   GITHUB_USERNAME: gazypendragon
   REPOSITORY_NAME: CRAA-Docker-Application-Code
   WEB_FILE_ZIP: rentzone.zip
@@ -14,9 +14,9 @@ env:
   FLYWAY_VERSION: 9.8.1
 
 jobs:
-# Step 1: Create Assume Role
-  create_assume_role:
-    name: Create Assume Role
+  # Configure AWS credentials 
+  configure_aws_credentials:
+    name: Configure AWS credentials with OIDC
     runs-on: ubuntu-latest
     permissions:
       id-token: write  # Required for OIDC
@@ -25,10 +25,20 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Configure AWS credentials with OIDC (no assume role yet)
-        uses: aws-actions/configure-aws-credentials@v2
+      - name: Configure AWS credentials with OIDC
+        uses: aws-actions/configure-aws-credentials@v4
         with:
+          role-to-assume: arn:aws:iam::131975964823:role/GitHubActionsRole  # Your assume role ARN
           aws-region: ${{ env.AWS_REGION }}
+
+  # Deploy Infrastructure
+  deploy_infrastructure:
+    name: Deploy Infrastructure
+    needs: configure_aws_credentials
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
       - name: Set up Terraform
         uses: hashicorp/setup-terraform@v3
@@ -39,24 +49,10 @@ jobs:
         working-directory: ./iac
         run: terraform init
 
-      - name: Create Assume Role with Terraform
+      - name: Terraform Apply
         working-directory: ./iac
-        run: terraform apply -target=aws_iam_role.github_oidc_role -auto-approve
-        # -target=aws_iam_role.github_oidc_role ensures only the assume role is created initially
+        run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
 
-   # Configure AWS credentials 
-  configure_aws_credentials:
-    name: Configure AWS credentials with OIDC
-    runs-on: ubuntu-latest
-    permissions:
-      id-token: write  # Required for OIDC
-      contents: read
-    steps:
-      - name: Configure AWS credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          role-to-assume: arn:aws:iam::131975964823:role/GitHubActionsRole  # Update with the role ARN created via Terraform
-          aws-region: ${{ env.AWS_REGION }}
 
 
   # Build AWS infrastructure
