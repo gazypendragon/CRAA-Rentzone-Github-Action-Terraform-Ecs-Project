@@ -14,8 +14,8 @@ resource "aws_iam_role" "github_oidc_role" {
         Action = "sts:AssumeRoleWithWebIdentity",
         Condition = {
           StringEquals = {
-            "token.actions.githubusercontent.com:aud": "sts.amazonaws.com",
-            "token.actions.githubusercontent.com:sub": "repo:gazypendragon/CRAA-Rentzone-Github-Action-Terraform-Ecs-Project:ref:refs/heads/main"
+            "token.actions.githubusercontent.com:aud" : "sts.amazonaws.com",
+            "token.actions.githubusercontent.com:sub" : "repo:gazypendragon/CRAA-Rentzone-Github-Action-Terraform-Ecs-Project:ref:refs/heads/main"
           }
         }
       }
@@ -26,6 +26,6 @@ resource "aws_iam_role" "github_oidc_role" {
 # Attach Administrator Access or a specific policy if needed
 resource "aws_iam_role_policy_attachment" "github_oidc_role_policy" {
   role       = aws_iam_role.github_oidc_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess"  # Adjust as needed
+  policy_arn = "arn:aws:iam::aws:policy/AdministratorAccess" # Adjust as needed
 }
 
