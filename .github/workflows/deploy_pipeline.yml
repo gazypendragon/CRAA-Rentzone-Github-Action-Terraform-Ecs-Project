@@ -15,25 +15,42 @@ jobs:
     permissions:
       id-token: write
       contents: read
+    outputs:
+      AWS_ACCESS_KEY_ID: ${{ steps.export_creds.outputs.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ steps.export_creds.outputs.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ steps.export_creds.outputs.AWS_SESSION_TOKEN }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
 
       - name: Configure AWS credentials with OIDC
+        id: configure_creds
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::131975964823:role/GitHubActionsRole
           aws-region: ${{ env.AWS_REGION }}
           role-session-name: github-actions
 
-      # Print environment variables to verify if credentials are set
-      - name: Print environment variables
-        run: env | grep AWS
+      - name: Export AWS credentials
+        id: export_creds
+        run: |
+          echo "AWS_ACCESS_KEY_ID=${{ env.AWS_ACCESS_KEY_ID }}" >> $GITHUB_ENV
+          echo "AWS_SECRET_ACCESS_KEY=${{ env.AWS_SECRET_ACCESS_KEY }}" >> $GITHUB_ENV
+          echo "AWS_SESSION_TOKEN=${{ env.AWS_SESSION_TOKEN }}" >> $GITHUB_ENV
+        env:
+          AWS_ACCESS_KEY_ID: ${{ steps.configure_creds.outputs.access-key-id }}
+          AWS_SECRET_ACCESS_KEY: ${{ steps.configure_creds.outputs.secret-access-key }}
+          AWS_SESSION_TOKEN: ${{ steps.configure_creds.outputs.session-token }}
 
   deploy_aws_infrastructure:
     name: Build AWS infrastructure
     needs: configure_aws_credentials
     runs-on: ubuntu-latest
+    env:
+      AWS_ACCESS_KEY_ID: ${{ needs.configure_aws_credentials.outputs.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ needs.configure_aws_credentials.outputs.AWS_SECRET_ACCESS_KEY }}
+      AWS_SESSION_TOKEN: ${{ needs.configure_aws_credentials.outputs.AWS_SESSION_TOKEN }}
+      AWS_REGION: ${{ env.AWS_REGION }}
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
@@ -43,7 +60,6 @@ jobs:
         with:
           terraform_version: 1.1.7
 
-      # Verify if AWS credentials are available before Terraform commands
       - name: Verify AWS Credentials
         run: aws sts get-caller-identity
 
@@ -54,6 +70,7 @@ jobs:
       - name: Run Terraform apply/destroy
         working-directory: ./iac
         run: terraform ${{ env.TERRAFORM_ACTION }} -auto-approve
+
 
 
 
