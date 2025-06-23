@@ -1,7 +1,7 @@
 # iam_role.tf
 
 resource "aws_iam_role" "github_oidc_role" {
-  name = "GitHubActionsRole"
+  name = "GitHubActionsRole-New"
 
   assume_role_policy = jsonencode({
     Version = "2012-10-17",
