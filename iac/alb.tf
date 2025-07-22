@@ -12,7 +12,7 @@ resource "aws_lb" "application_load_balancer" {
   }
 }
 
-# create target group
+# create target group with optimized health check settings
 resource "aws_lb_target_group" "alb_target_group" {
   name        = "${var.project_name}-${var.environment}-tg"
   target_type = "ip"
@@ -20,15 +20,24 @@ resource "aws_lb_target_group" "alb_target_group" {
   protocol    = "HTTP"
   vpc_id      = aws_vpc.vpc.id
 
+  # Optimized health check configuration for Laravel
   health_check {
-    healthy_threshold   = 5
-    interval            = 30
-    matcher             = "200,301,302"
-    path                = "/"
-    port                = "traffic-port"
-    protocol            = "HTTP"
-    timeout             = 5
-    unhealthy_threshold = 2
+    enabled                = true
+    healthy_threshold      = 2                    # Reduced from 5 to 2 (faster to mark healthy)
+    interval               = 30                   # Check every 30 seconds
+    matcher                = "200"                # Only accept 200 (removed redirects to avoid confusion)
+    path                   = "/health.php"        # Use dedicated health endpoint
+    port                   = "traffic-port"
+    protocol               = "HTTP"
+    timeout                = 10                   # Increased from 5 to 10 seconds
+    unhealthy_threshold    = 5                    # Increased from 2 to 5 (more tolerant of temporary failures)
+  }
+
+  # Connection draining settings
+  deregistration_delay = 60
+
+  tags = {
+    Name = "${var.project_name}-${var.environment}-tg"
   }
 }
 
@@ -54,7 +63,7 @@ resource "aws_lb_listener" "alb_https_listener" {
   load_balancer_arn = aws_lb.application_load_balancer.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-2016-08"
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"        # Updated SSL policy
   certificate_arn   = aws_acm_certificate.acm_certificate.arn
 
   default_action {
