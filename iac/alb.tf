@@ -21,17 +21,17 @@ resource "aws_lb_target_group" "alb_target_group" {
   vpc_id      = aws_vpc.vpc.id
 
   # Optimized health check configuration for Laravel
-  health_check {
-    enabled                = true
-    healthy_threshold      = 2                    # Reduced from 5 to 2 (faster to mark healthy)
-    interval               = 30                   # Check every 30 seconds
-    matcher                = "200"                # Only accept 200 (removed redirects to avoid confusion)
-    path                   = "/health.php"        # Use dedicated health endpoint
-    port                   = "traffic-port"
-    protocol               = "HTTP"
-    timeout                = 10                   # Increased from 5 to 10 seconds
-    unhealthy_threshold    = 5                    # Increased from 2 to 5 (more tolerant of temporary failures)
-  }
+  # In your alb.tf file, update this part:
+health_check {
+  healthy_threshold   = 2      # Changed from 5
+  interval            = 30
+  matcher             = "200"  # Changed from "200,301,302" 
+  path                = "/health.php"
+  port                = "traffic-port"
+  protocol            = "HTTP"
+  timeout             = 10     # Changed from 5
+  unhealthy_threshold = 5      # Changed from 2
+}
 
   # Connection draining settings
   deregistration_delay = 60
