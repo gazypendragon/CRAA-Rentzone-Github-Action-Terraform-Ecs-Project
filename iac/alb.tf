@@ -22,16 +22,16 @@ resource "aws_lb_target_group" "alb_target_group" {
 
   # Optimized health check configuration for Laravel
   # In your alb.tf file, update this part:
-health_check {
-  healthy_threshold   = 2      # Changed from 5
-  interval            = 30
-  matcher             = "200"  # Changed from "200,301,302" 
-  path                = "/health.php"
-  port                = "traffic-port"
-  protocol            = "HTTP"
-  timeout             = 10     # Changed from 5
-  unhealthy_threshold = 5      # Changed from 2
-}
+  health_check {
+    healthy_threshold   = 2 # Changed from 5
+    interval            = 30
+    matcher             = "200" # Changed from "200,301,302" 
+    path                = "/health.php"
+    port                = "traffic-port"
+    protocol            = "HTTP"
+    timeout             = 10 # Changed from 5
+    unhealthy_threshold = 5  # Changed from 2
+  }
 
   # Connection draining settings
   deregistration_delay = 60
@@ -63,7 +63,7 @@ resource "aws_lb_listener" "alb_https_listener" {
   load_balancer_arn = aws_lb.application_load_balancer.arn
   port              = 443
   protocol          = "HTTPS"
-  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01"        # Updated SSL policy
+  ssl_policy        = "ELBSecurityPolicy-TLS-1-2-2017-01" # Updated SSL policy
   certificate_arn   = aws_acm_certificate.acm_certificate.arn
 
   default_action {

@@ -1,3 +1,69 @@
+# create ecs cluster
+resource "aws_ecs_cluster" "ecs_cluster" {
+  name = "${var.project_name}-${var.environment}-cluster"
+
+  setting {
+    name  = "containerInsights"
+    value = "disabled"
+  }
+}
+
+# create cloudwatch log group
+resource "aws_cloudwatch_log_group" "log_group" {
+  name = "/ecs/${var.project_name}-${var.environment}-td"
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+# create task definition
+resource "aws_ecs_task_definition" "ecs_task_definition" {
+  family                   = "${var.project_name}-${var.environment}-td"
+  execution_role_arn       = aws_iam_role.ecs_task_execution_role.arn
+  network_mode             = "awsvpc"
+  requires_compatibilities = ["FARGATE"]
+  cpu                      = 2048
+  memory                   = 4096
+
+  runtime_platform {
+    operating_system_family = "LINUX"
+    cpu_architecture        = var.architecture
+  }
+
+  # create container definition
+  container_definitions = jsonencode([
+    {
+      name      = "${var.project_name}-${var.environment}-container"
+      image     = "${local.secrets.ecr_registry}/${var.image_name}:${var.image_tag}"
+      essential = true
+
+      portMappings = [
+        {
+          containerPort = 80
+          hostPort      = 80
+        }
+      ]
+
+      environmentFiles = [
+        {
+          value = "arn:aws:s3:::${var.project_name}-${var.env_file_bucket_name}/${var.env_file_name}"
+          type  = "s3"
+        }
+      ]
+
+      logConfiguration = {
+        logDriver = "awslogs",
+        options = {
+          "awslogs-group"         = "${aws_cloudwatch_log_group.log_group.name}",
+          "awslogs-region"        = "${var.region}",
+          "awslogs-stream-prefix" = "ecs"
+        }
+      }
+    }
+  ])
+}
+
 # create ecs service
 resource "aws_ecs_service" "ecs_service" {
   name                               = "${var.project_name}-${var.environment}-service"
@@ -8,15 +74,7 @@ resource "aws_ecs_service" "ecs_service" {
   desired_count                      = 2
   deployment_minimum_healthy_percent = 50
   deployment_maximum_percent         = 200
-  health_check_grace_period_seconds  = 300  # Reduced from 960 to 300 (5 minutes)
-
-  # Deployment configuration for circuit breaker
-  deployment_configuration {
-    deployment_circuit_breaker {
-      enable   = true
-      rollback = true
-    }
-  }
+  health_check_grace_period_seconds  = 300  # Reduced from 960 to 300
 
   # task tagging configuration
   enable_ecs_managed_tags = false
@@ -34,20 +92,5 @@ resource "aws_ecs_service" "ecs_service" {
     target_group_arn = aws_lb_target_group.alb_target_group.arn
     container_name   = "${var.project_name}-${var.environment}-container"
     container_port   = 80
-  }
-
-  # Lifecycle management
-  lifecycle {
-    ignore_changes = [desired_count]
-  }
-
-  # Ensure dependencies are created first
-  depends_on = [
-    aws_lb_listener.alb_https_listener,
-    aws_lb_listener.alb_http_listener
-  ]
-
-  tags = {
-    Name = "${var.project_name}-${var.environment}-service"
   }
 }
