@@ -125,18 +125,79 @@
 # # Start Apache and MySQL
 # ENTRYPOINT ["/usr/sbin/httpd", "-D", "FOREGROUND"]
 
-FROM amazonlinux:2
+# FROM amazonlinux:2
 
-RUN yum update -y && \
-    yum install -y unzip wget git httpd php php-mysqlnd php-xml php-mbstring php-json php-cli php-common && \
-    yum clean all
+# RUN yum update -y && \
+#     yum install -y unzip wget git httpd php php-mysqlnd php-xml php-mbstring php-json php-cli php-common && \
+#     yum clean all
 
-# Enable Apache mod_rewrite
-RUN sed -i '/<Directory "\/var\/www\/html">/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/httpd/conf/httpd.conf
+# # Enable Apache mod_rewrite
+# RUN sed -i '/<Directory "\/var\/www\/html">/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/httpd/conf/httpd.conf
 
+# WORKDIR /var/www/html
+
+# # Set build args and env
+# ARG PERSONAL_ACCESS_TOKEN
+# ARG GITHUB_USERNAME
+# ARG REPOSITORY_NAME
+# ARG WEB_FILE_ZIP
+# ARG WEB_FILE_UNZIP
+# ARG DOMAIN_NAME
+# ARG RDS_ENDPOINT
+# ARG RDS_DB_NAME
+# ARG RDS_DB_USERNAME
+# ARG RDS_DB_PASSWORD
+
+# ENV DOMAIN_NAME=$DOMAIN_NAME
+# ENV RDS_ENDPOINT=$RDS_ENDPOINT
+# ENV RDS_DB_NAME=$RDS_DB_NAME
+# ENV RDS_DB_USERNAME=$RDS_DB_USERNAME
+# ENV RDS_DB_PASSWORD=$RDS_DB_PASSWORD
+
+# # Clone and unzip Laravel app
+# RUN git clone https://${PERSONAL_ACCESS_TOKEN}@github.com/${GITHUB_USERNAME}/${REPOSITORY_NAME}.git && \
+#     unzip ${REPOSITORY_NAME}/${WEB_FILE_ZIP} -d ${REPOSITORY_NAME}/ && \
+#     cp -av ${REPOSITORY_NAME}/${WEB_FILE_UNZIP}/. . && \
+#     rm -rf ${REPOSITORY_NAME}
+
+# # Update Laravel .env values
+# RUN sed -i "/^APP_ENV=/ s/=.*$/=production/" .env && \
+#     sed -i "/^APP_URL=/ s|=.*$|=https://${DOMAIN_NAME}/|" .env && \
+#     sed -i "/^DB_HOST=/ s/=.*$/${RDS_ENDPOINT}/" .env && \
+#     sed -i "/^DB_DATABASE=/ s/=.*$/${RDS_DB_NAME}/" .env && \
+#     sed -i "/^DB_USERNAME=/ s/=.*$/${RDS_DB_USERNAME}/" .env && \
+#     sed -i "/^DB_PASSWORD=/ s/=.*$/${RDS_DB_PASSWORD}/" .env
+
+# # Laravel permissions
+# RUN chmod -R 775 storage bootstrap/cache
+
+# # Expose Apache
+# EXPOSE 80
+
+# # Start Apache in foreground
+# CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+
+# Use Amazon Linux 2023 base image
+FROM amazonlinux:2023
+
+# Update packages
+RUN dnf update -y
+
+# Install required packages
+RUN dnf install -y unzip wget git httpd php php-cli php-mysqlnd php-common \
+    php-pdo php-mbstring php-json php-xml php-gd php-intl php-opcache php-fpm php-pecl-zip
+
+# Download and install MySQL 8 repo
+RUN wget https://repo.mysql.com/mysql80-community-release-el9-1.noarch.rpm && \
+    rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 && \
+    dnf install -y mysql80-community-release-el9-1.noarch.rpm && \
+    dnf install -y mysql-community-server && \
+    dnf clean all
+
+# Change directory to Apache web root
 WORKDIR /var/www/html
 
-# Set build args and env
+# Set build argument directive
 ARG PERSONAL_ACCESS_TOKEN
 ARG GITHUB_USERNAME
 ARG REPOSITORY_NAME
@@ -148,31 +209,48 @@ ARG RDS_DB_NAME
 ARG RDS_DB_USERNAME
 ARG RDS_DB_PASSWORD
 
+# Set environment variables
+ENV PERSONAL_ACCESS_TOKEN=$PERSONAL_ACCESS_TOKEN 
+ENV GITHUB_USERNAME=$GITHUB_USERNAME
+ENV REPOSITORY_NAME=$REPOSITORY_NAME
+ENV WEB_FILE_ZIP=$WEB_FILE_ZIP
+ENV WEB_FILE_UNZIP=$WEB_FILE_UNZIP
 ENV DOMAIN_NAME=$DOMAIN_NAME
 ENV RDS_ENDPOINT=$RDS_ENDPOINT
 ENV RDS_DB_NAME=$RDS_DB_NAME
 ENV RDS_DB_USERNAME=$RDS_DB_USERNAME
 ENV RDS_DB_PASSWORD=$RDS_DB_PASSWORD
 
-# Clone and unzip Laravel app
+# Clone the GitHub repository and prepare the application
 RUN git clone https://${PERSONAL_ACCESS_TOKEN}@github.com/${GITHUB_USERNAME}/${REPOSITORY_NAME}.git && \
     unzip ${REPOSITORY_NAME}/${WEB_FILE_ZIP} -d ${REPOSITORY_NAME}/ && \
-    cp -av ${REPOSITORY_NAME}/${WEB_FILE_UNZIP}/. . && \
+    cp -av ${REPOSITORY_NAME}/${WEB_FILE_UNZIP}/. /var/www/html && \
     rm -rf ${REPOSITORY_NAME}
 
-# Update Laravel .env values
-RUN sed -i "/^APP_ENV=/ s/=.*$/=production/" .env && \
+# Enable Apache mod_rewrite
+RUN sed -i '/<Directory "\/var\/www\/html">/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/httpd/conf/httpd.conf
+
+# Set file permissions
+RUN chmod -R 777 /var/www/html && \
+    chmod -R 777 storage/ || true
+
+# Update .env values
+RUN sed -i '/^APP_ENV=/ s/=.*$/=production/' .env && \
     sed -i "/^APP_URL=/ s|=.*$|=https://${DOMAIN_NAME}/|" .env && \
     sed -i "/^DB_HOST=/ s/=.*$/${RDS_ENDPOINT}/" .env && \
     sed -i "/^DB_DATABASE=/ s/=.*$/${RDS_DB_NAME}/" .env && \
     sed -i "/^DB_USERNAME=/ s/=.*$/${RDS_DB_USERNAME}/" .env && \
     sed -i "/^DB_PASSWORD=/ s/=.*$/${RDS_DB_PASSWORD}/" .env
 
-# Laravel permissions
-RUN chmod -R 775 storage bootstrap/cache
+# Print .env for verification
+RUN cat .env
 
-# Expose Apache
-EXPOSE 80
+# Copy Laravel provider override file
+COPY AppServiceProvider.php app/Providers/AppServiceProvider.php
 
-# Start Apache in foreground
-CMD ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+# Expose HTTP and MySQL ports
+EXPOSE 80 3306
+
+# Start Apache in foreground (note: MySQL won’t be started this way in Fargate)
+ENTRYPOINT ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+
