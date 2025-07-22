@@ -1,0 +1,172 @@
+[33m51c65b6[m[33m ([m[1;36mHEAD[m[33m -> [m[1;32mmain[m[33m, [m[1;31morigin/main[m[33m, [m[1;31morigin/HEAD[m[33m)[m Updated Github action Role
+[33m91f7e4a[m updated tf files
+[33m448d63d[m DEploy App
+[33me825082[m Deploy App on aws
+[33m63477b1[m mko
+[33me8d0a45[m 963
+[33md761b14[m 753
+[33meee3233[m 456
+[33m6ceb001[m lewar
+[33m36dc73c[m 789
+[33mfae7a4a[m Bud
+[33m4c0d8a4[m ok
+[33m4d955d5[m D
+[33m275cea2[m B
+[33m12a8f1e[m s3
+[33m4b0b610[m Good
+[33mc674c2d[m G
+[33m70f5e8e[m Election
+[33mf09a7ee[m tues
+[33m5b321d8[m Testing-two jobs
+[33m1d36055[m oicd
+[33mce6f3ad[m remove
+[33m58fd208[m Creating aws resources
+[33mc30f191[m Destroy resources
+[33mac99998[m Creating aws Resources
+[33ma515353[m Destroy aws infrastructure
+[33mca55a80[m Final
+[33m526e5d5[m test
+[33m6e5a17c[m n
+[33md97fdd6[m new
+[33mbd06d74[m update
+[33mb27fa17[m updates
+[33m44e53b9[m Create Terraform REsources
+[33m37600de[m Aws infra Destroy
+[33md30472c[m Delete
+[33m3beaf91[m 123
+[33mc65b491[m BAR
+[33m900cb18[m Build Aws Resources
+[33mf8a54b8[m Created Aws Infras
+[33m38c48a8[m test
+[33m4d4f777[m destroy
+[33me15adb8[m create aws Resources
+[33m852f39e[m destroy
+[33m4968e78[m Build aws infrastructure
+[33m485cb3e[m Build aws infra
+[33m4f37f9a[m Build Aws Infrastructures
+[33m23e37cb[m build aws infrastructure
+[33me551390[m Build aws infrastructures
+[33mc7c4bda[m Destroy aws Resources
+[33m2eceb54[m build_aws_resources
+[33mbcd6742[m Build aws resources
+[33mebb9b91[m Destroy_aws_infra
+[33mcb2e12f[m build_aws_resources
+[33m5f08c13[m build-aws-resources
+[33me47c937[m Build_aws_Resources
+[33m692b646[m Destroy Infras
+[33m7bc154a[m Build-aws-Infra
+[33mfd98a22[m Build-aws_infrastructure
+[33m0dac844[m updates
+[33mdb54beb[m Build_Resources
+[33m767a642[m Row-Back-Code
+[33ma68c46c[m update
+[33me0c6b08[m aws secret manager infos update
+[33me9d0b99[m updates
+[33m4bb1a37[m update
+[33maa1aa25[m updated Versions for all used actions in this workflow to current
+[33m111f60e[m Infras-Destroy
+[33mcb27cf8[m Build Infra
+[33macf0630[m Infra1
+[33m974b69b[m Infra
+[33mad3a4eb[m New
+[33mad0a2b2[m Scan-Trivy
+[33m2405e73[m Rescan-Trivy
+[33m954d459[m Trivy-Infra-Scan
+[33m3492ae7[m Trivy Scan
+[33m58c32e3[m ReBuild-Scan Infra-Trivy
+[33me8444af[m Trivy Infra-Destroy
+[33m9f5e80e[m Trivy Infra
+[33mb3585e4[m trivy code scan
+[33m9262efe[m update
+[33mbd1be80[m updated version for infra deployment with code scans
+[33m80aa5fc[m test deploy code
+[33m6aeaf77[m destroy aws infra
+[33m8aa82d0[m update on build aws infras
+[33mff8411d[m build aws infra
+[33m0571107[m destroy aws infra
+[33m318c48e[m build infras
+[33m48cb98e[m build infrastructure
+[33m5c2d32f[m update code
+[33m615cdfa[m update code
+[33mb0fac5e[m updated php code
+[33m5cba1cb[m update php7.4 to php8.3
+[33ma155d1b[m update Dockerfile GPG Key Issue
+[33m62d96f7[m update Dockerfile GPG Key Issue
+[33ma1d63ad[m updated code
+[33m57d56b0[m update code for aws-action
+[33m9ffc88e[m update code
+[33m559cbdd[m updated aws-action version
+[33m7c7b152[m updated code
+[33m4347763[m updated code
+[33m1913f91[m updated Code
+[33madef213[m updated Code
+[33mf4696f2[m updated deployment code
+[33m547b942[m updated readme file
+[33m7d7d138[m updated readme file
+[33m786ea09[m destroy aws resources
+[33m424aa4b[m create aws infrastucture
+[33m72de37b[m create aws infrastructure
+[33m90292fe[m updated readme file
+[33m295ca40[m updated readme file
+[33m6a44c72[m Merge branch 'main' of github.com:gazypendragon/CRAA-Rentzone-Github-Action-Terraform-Ecs-Project
+[33mbbe43ea[m Add files via upload
+[33me04c373[m updated image file
+[33mf4d2f13[m Delete Ecs-3-Tier-Architecture.png
+[33mb2820e4[m Add files via upload
+[33mff0e1ac[m destroy aws infrastructure
+[33mc577480[m create aws infrastructure
+[33m87e9c1d[m create aws infrastructure
+[33mc1e0bd5[m destroy aws infra
+[33m12fe92c[m build aws infra
+[33m372e307[m destroy aws infrastructure
+[33ma919436[m build aws infrasructure /restart ecs fargate
+[33mce6bd86[m destroy aws infrastructure
+[33mceb6ca0[m build aws infrastructure
+[33m098e152[m destroy aws infrastructure
+[33m780fc4e[m destroy aws infrastructure
+[33mcd4e7e8[m RESTART ECS SERVICE
+[33ma6a62df[m restart ecs service
+[33mfcc0947[m restart ecs service
+[33m2b7335e[m created TD revision
+[33mfa80cb4[m stop runner
+[33m71160e5[m sink changes
+[33m6216141[m sink changes
+[33m588283b[m create env file
+[33m2275a84[m build  docker image
+[33m14f2a62[m build docker image
+[33mba142e0[m build docker image
+[33mb440303[m built docker image
+[33made5d59[m build docker image
+[33mda74658[m build docker image
+[33m529e23c[m built docker image
+[33m8e351e1[m ec2 self hosted runner
+[33mbfffc3b[m build docker image
+[33m03b31e9[m build docker image
+[33m00b6be6[m build docker image
+[33m3f1ccb2[m build Docker image
+[33m4b1731c[m build docker image
+[33m128dd11[m bulit docker image
+[33m1d72d80[m built docker image
+[33m79a6bb6[m built docker image
+[33m8dc05a1[m build docker image
+[33me19c468[m built docker image
+[33m96cfa50[m build docker image
+[33mccbfb78[m build docker image
+[33m8608521[m Built Docker image
+[33m96177c0[m Build docker image
+[33ma402f5b[m destroy aws infrastucture
+[33mb1e1fc5[m destroy aws infrastructure
+[33m11872e3[m destroy aws infrasructure
+[33m0178ebc[m start ec2 runner
+[33m32de220[m start ec2 runner
+[33m1520d04[m start ec2 runner
+[33m18afb8e[m Start ece runner
+[33mb18b6ac[m create ecr repository
+[33m06f5dad[m create ecr repository
+[33m0d0042d[m create amazon ecr repository
+[33me4dc85f[m create Amazon ecr repository
+[33mdbfe8e3[m destroy aws infrastucture
+[33mc8685f3[m apply aws infrastructure
+[33mc43015f[m Configure Aws Credentials
+[33m88ea2a3[m created iac folder & update git ignore
+[33m4e9f298[m Initial commit
