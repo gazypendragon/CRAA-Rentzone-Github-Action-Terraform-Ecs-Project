@@ -183,15 +183,10 @@ FROM amazonlinux:2023
 # Update packages
 RUN dnf update -y
 
-# Install required packages
+# Install required packages (added essential Laravel PHP extensions)
 RUN dnf install -y unzip wget git httpd php php-cli php-mysqlnd php-common \
-    php-pdo php-mbstring php-json php-xml php-gd php-intl php-opcache php-fpm php-zip
-
-# Download and install MySQL 8 repo
-RUN wget https://repo.mysql.com/mysql80-community-release-el9-1.noarch.rpm && \
-    rpm --import https://repo.mysql.com/RPM-GPG-KEY-mysql-2023 && \
-    dnf install -y mysql80-community-release-el9-1.noarch.rpm && \
-    dnf install -y mysql-community-server && \
+    php-pdo php-mbstring php-json php-xml php-gd php-intl php-opcache php-fpm php-zip \
+    php-curl php-dom php-session php-tokenizer php-fileinfo && \
     dnf clean all
 
 # Change directory to Apache web root
@@ -230,26 +225,83 @@ RUN git clone https://${PERSONAL_ACCESS_TOKEN}@github.com/${GITHUB_USERNAME}/${R
 # Enable Apache mod_rewrite
 RUN sed -i '/<Directory "\/var\/www\/html">/,/<\/Directory>/ s/AllowOverride None/AllowOverride All/' /etc/httpd/conf/httpd.conf
 
-# Set file permissions
-RUN chmod -R 777 /var/www/html && \
-    chmod -R 777 storage/ || true
+# Set proper file permissions for Apache (improved from 777)
+RUN chown -R apache:apache /var/www/html && \
+    chmod -R 755 /var/www/html && \
+    chmod -R 775 storage/ bootstrap/cache/ 2>/dev/null || true
 
-# Update .env values
-RUN sed -i '/^APP_ENV=/ s/=.*$/=production/' .env && \
-    sed -i "/^APP_URL=/ s|=.*$|=https://${DOMAIN_NAME}/|" .env && \
-    sed -i "/^DB_HOST=/ s/=.*$/${RDS_ENDPOINT}/" .env && \
-    sed -i "/^DB_DATABASE=/ s/=.*$/${RDS_DB_NAME}/" .env && \
-    sed -i "/^DB_USERNAME=/ s/=.*$/${RDS_DB_USERNAME}/" .env && \
-    sed -i "/^DB_PASSWORD=/ s/=.*$/${RDS_DB_PASSWORD}/" .env
+# Update .env values (added error handling)
+RUN if [ -f .env ]; then \
+        sed -i '/^APP_ENV=/ s/=.*$/=production/' .env && \
+        sed -i "/^APP_URL=/ s|=.*$|=https://${DOMAIN_NAME}/|" .env && \
+        sed -i "/^DB_HOST=/ s/=.*$/=${RDS_ENDPOINT}/" .env && \
+        sed -i "/^DB_DATABASE=/ s/=.*$/=${RDS_DB_NAME}/" .env && \
+        sed -i "/^DB_USERNAME=/ s/=.*$/=${RDS_DB_USERNAME}/" .env && \
+        sed -i "/^DB_PASSWORD=/ s/=.*$/=${RDS_DB_PASSWORD}/" .env; \
+    else \
+        echo "No .env file found, creating basic one..."; \
+        echo "APP_NAME=Laravel" > .env && \
+        echo "APP_ENV=production" >> .env && \
+        echo "APP_DEBUG=false" >> .env && \
+        echo "APP_URL=https://${DOMAIN_NAME}" >> .env && \
+        echo "DB_CONNECTION=mysql" >> .env && \
+        echo "DB_HOST=${RDS_ENDPOINT}" >> .env && \
+        echo "DB_PORT=3306" >> .env && \
+        echo "DB_DATABASE=${RDS_DB_NAME}" >> .env && \
+        echo "DB_USERNAME=${RDS_DB_USERNAME}" >> .env && \
+        echo "DB_PASSWORD=${RDS_DB_PASSWORD}" >> .env; \
+    fi
 
 # Print .env for verification
 RUN cat .env
 
-# Copy Laravel provider override file
+# Copy Laravel provider override file (with error handling)
 COPY AppServiceProvider.php app/Providers/AppServiceProvider.php
 
-# Expose HTTP and MySQL ports
-EXPOSE 80 3306
+# Create health check endpoint for ALB
+RUN echo '<?php' > /var/www/html/health.php && \
+    echo 'http_response_code(200);' >> /var/www/html/health.php && \
+    echo 'echo "OK";' >> /var/www/html/health.php && \
+    echo '?>' >> /var/www/html/health.php
 
-# Start Apache in foreground (note: MySQL won't be started this way in Fargate)
-ENTRYPOINT ["/usr/sbin/httpd", "-D", "FOREGROUND"]
+# Configure Apache properly for container environment
+RUN echo "ServerName localhost" >> /etc/httpd/conf/httpd.conf && \
+    sed -i 's/^#ServerName www.example.com:80/ServerName localhost:80/' /etc/httpd/conf/httpd.conf && \
+    echo "PidFile /var/run/httpd/httpd.pid" >> /etc/httpd/conf/httpd.conf
+
+# Create httpd PID directory
+RUN mkdir -p /var/run/httpd && \
+    chown apache:apache /var/run/httpd
+
+# Create startup script for graceful shutdown handling
+RUN echo '#!/bin/bash' > /usr/local/bin/start-server.sh && \
+    echo 'set -e' >> /usr/local/bin/start-server.sh && \
+    echo '' >> /usr/local/bin/start-server.sh && \
+    echo '# Create PID directory' >> /usr/local/bin/start-server.sh && \
+    echo 'mkdir -p /var/run/httpd' >> /usr/local/bin/start-server.sh && \
+    echo 'chown apache:apache /var/run/httpd' >> /usr/local/bin/start-server.sh && \
+    echo '' >> /usr/local/bin/start-server.sh && \
+    echo '# Function to handle shutdown gracefully' >> /usr/local/bin/start-server.sh && \
+    echo 'shutdown_handler() {' >> /usr/local/bin/start-server.sh && \
+    echo '    echo "Received shutdown signal, stopping Apache gracefully..."' >> /usr/local/bin/start-server.sh && \
+    echo '    /usr/sbin/httpd -k graceful-stop' >> /usr/local/bin/start-server.sh && \
+    echo '    exit 0' >> /usr/local/bin/start-server.sh && \
+    echo '}' >> /usr/local/bin/start-server.sh && \
+    echo '' >> /usr/local/bin/start-server.sh && \
+    echo '# Trap shutdown signals' >> /usr/local/bin/start-server.sh && \
+    echo 'trap shutdown_handler SIGTERM SIGINT SIGQUIT' >> /usr/local/bin/start-server.sh && \
+    echo '' >> /usr/local/bin/start-server.sh && \
+    echo '# Test Apache configuration' >> /usr/local/bin/start-server.sh && \
+    echo 'echo "Testing Apache configuration..."' >> /usr/local/bin/start-server.sh && \
+    echo '/usr/sbin/httpd -t' >> /usr/local/bin/start-server.sh && \
+    echo '' >> /usr/local/bin/start-server.sh && \
+    echo '# Start Apache' >> /usr/local/bin/start-server.sh && \
+    echo 'echo "Starting Apache web server..."' >> /usr/local/bin/start-server.sh && \
+    echo 'exec /usr/sbin/httpd -D FOREGROUND' >> /usr/local/bin/start-server.sh && \
+    chmod +x /usr/local/bin/start-server.sh
+
+# Expose only HTTP port (removed MySQL port since using RDS)
+EXPOSE 80
+
+# Use the startup script for better signal handling
+ENTRYPOINT ["/usr/local/bin/start-server.sh"]
