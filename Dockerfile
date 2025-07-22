@@ -185,7 +185,7 @@ RUN dnf update -y
 
 # Install required packages
 RUN dnf install -y unzip wget git httpd php php-cli php-mysqlnd php-common \
-    php-pdo php-mbstring php-json php-xml php-gd php-intl php-opcache php-fpm php-pecl-zip
+    php-pdo php-mbstring php-json php-xml php-gd php-intl php-opcache php-fpm php-zip
 
 # Download and install MySQL 8 repo
 RUN wget https://repo.mysql.com/mysql80-community-release-el9-1.noarch.rpm && \
@@ -251,6 +251,5 @@ COPY AppServiceProvider.php app/Providers/AppServiceProvider.php
 # Expose HTTP and MySQL ports
 EXPOSE 80 3306
 
-# Start Apache in foreground (note: MySQL won’t be started this way in Fargate)
+# Start Apache in foreground (note: MySQL won't be started this way in Fargate)
 ENTRYPOINT ["/usr/sbin/httpd", "-D", "FOREGROUND"]
-
